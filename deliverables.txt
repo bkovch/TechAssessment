@@ -1,0 +1,18 @@
+Deliverables by task:
+
+1.  sql/best product & marketing.sql
+    
+2.  sql/ddl.sql
+    sql/order_products.sql
+    sql/marketing_orders.sql
+    comments.txt
+    
+3.  py/test_in.xlsx
+    py/test_out.csv
+    py/requirements.txt
+    py/test.py
+    py/xlsx_to_csv.py
+    py/csv_format.json
+    comments.txt
+    
+4.  py/Dockerfile

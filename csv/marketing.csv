@@ -1,0 +1,3 @@
+id, ad_network, source, created_at, updated_at
+1, facebook, ads, 2020-12-01 00:00:00, 2020-12-01 00:00:00
+2, facebook, remarketing, 2020-12-01 00:00:00, 2020-12-01 00:00:00

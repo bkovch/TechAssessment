@@ -1,0 +1,8 @@
+{
+    "id": "int32",
+    "name": "string",
+    "commas_count": "int32",
+    "commas_used": "string",
+    "created_at": "datetime64",
+    "updated_at": "datetime64"
+}

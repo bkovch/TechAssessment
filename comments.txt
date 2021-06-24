@@ -1,0 +1,31 @@
+Schema:
+    • I am using MySQL with MySQL Workbench for this project because I already have them installed on my machine, and I used them previously. I was also thinking about running Postgres SQL in a Docker container, but decided to go with more familiar tools for now.
+    • It is a good idea to separate tables into two schemas: "lull_staging" and "lull_reports" to keep staging data and reports in separate groups. It is especially important because we have a staging table and a report table having the same name "marketing_orders". We avoid this name conflict by keeping them in different schemas.
+    • Column "id" is used as a default native primary key that uniquely identifies a row.
+    • Table "marketing_orders" doesn't have a native "id" column, so a compound primary key is made from foreign "order_id" and "marketing_id" to guarantee row uniqueness.
+    • Foreign key constraints are added for non-native (foreign) id columns to connect tables and enforce data integrity across the schema.
+    • Unique constraints are added in tables "products" and "marketing" for string columns that act as informal keys to prevent possible duplicate inserts.
+    • In table "orders" column "product_quantity" is specified as a string type whereas it should be a numeric type. That's why I changed its type to integer.
+    • To create reports, I use a simple table drop and create. In real life, if these are big tables, and I need to update reports fast, I would use a merge or create+update commands to add/update only the report rows that changed since my previous update. Then I would use columns "updated_at" to see what rows need to be updated.
+    • For small and fast reports, I prefer to use views, so the report is generated from fresh real-time data whenever it is requested. However, the task instructions tell to generate the report into a table. This is a good option if data doesn't update frequently or when report is too big and expensive to generate at every user request.
+
+Report "order_products":
+    • The original task assignment doesn't mention clearly if this report is supposed to do any aggregation. I asked Kirk about this and was told we need aggregation by product and month.
+    • All columns that need to be displayed are found in table "orders", including column "product_id", so there is no need to join table "products". However, it would make more sense to add column "product_name" to make this report more human-friendly, and then this would require joining the "products" table.
+    • Column "num_sold", the number of products sold, is essentially an aggregated sum of "product_quantity" from table "orders"
+    • Column "product_quantity" from table "orders" is a string in the staging table, but it makes sense to make it numeric when we copy its values into column "num_sold".
+    • Column "ordered_at" in table "orders" is a datetime type, but because we truncate it to the first of the month, it makes sense to turn it into a date type colum "month".
+    • Column "id" is automatically generated from a report row number. It doesn't seem to have any practical purpose, and acts rather as a surrogate primary key here, probably never used in practice. Once the report is regenerated, the same product-month row may have a different id.
+    • Foreign key for product_id is added to maintain data integrity.
+    • Because the report is an aggregation by product and month, we expect every row to have a unique pair of these values. That's why a unique index is added for these two columns. This index may make report querying faster if it gets big in real life and the user queries it by a specific product and/or month. 
+        
+Report "marketing_orders":
+    • The task description doesn't talk about aggregation explicitly but the description for the last three columns give a very clear hint that aggregation should be done using group by "ad_network" and "source" (marketing_id). Uniqueness of this pair is also enforced by a unique index constraint to make querying faster.
+    • For facebook-remarketing aggregation group, two products have the same top quantity 3, but because we want to show only one, it makes sense to show the most recently sold one. That's why the row_number() window funciton order by includes descending "most_recent_sold_date".
+    • For "id" column I am simply reusing the "marketing_id" because the rows are grouped by this column, and thus it is unique, and can be also used as a primary key. To enforce integrity with the original "marketing_id", "id" is also a foreign key to table "marketing".
+    
+Python XLSX to CSV conversion:
+    • There is no need to instantiate class "xlsx_to_csv", so all of its methods are static thus making the entire class static. 
+    • Pandas allows manipulating XLSX and CSV files easily, so it is used to do the job. This and other used packages are listed in file "requirements.txt" used to replicate used packages for a Python environment.
+    • The CSV File Format rules defined in the spec are stored in file "csv_format.json". The class loads it and uses to build the CSV file.
+    • I added three extra test cases to the XLSX file (test_in.xlsx) to test it with "commas_used" values "", "abc", and "a,b,c".
